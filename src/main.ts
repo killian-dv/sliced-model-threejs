@@ -43,8 +43,6 @@ rgbeLoader.load("./aerodynamics_workshop.hdr", (environmentMap) => {
 /**
  * Sliced model
  */
-// Geometry
-const geometry = new THREE.IcosahedronGeometry(2.5, 5);
 
 // Material
 const material = new THREE.MeshStandardMaterial({
@@ -54,9 +52,20 @@ const material = new THREE.MeshStandardMaterial({
   color: "#858080",
 });
 
-// Mesh
-const mesh = new THREE.Mesh(geometry, material);
-scene.add(mesh);
+// model
+let model: THREE.Group | null = null;
+gltfLoader.load("./gears.glb", (gltf) => {
+  model = gltf.scene;
+
+  model.traverse((child) => {
+    if (child instanceof THREE.Mesh) {
+      child.material = material;
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
+  scene.add(model);
+});
 
 /**
  * Plane
@@ -150,6 +159,10 @@ const clock = new THREE.Clock();
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+
+  if (model) {
+    model.rotation.y = elapsedTime * 0.1;
+  }
 
   // Update controls
   controls.update();
