@@ -4,7 +4,10 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import CustomShaderMaterial from "three-custom-shader-material/vanilla";
 import "./style.css";
+import vertex from "./shaders/sliced/vertex.glsl";
+import fragment from "./shaders/sliced/fragment.glsl";
 
 /**
  * Base
@@ -52,6 +55,18 @@ const material = new THREE.MeshStandardMaterial({
   color: "#858080",
 });
 
+const slicedMaterial = new CustomShaderMaterial({
+  // csm
+  baseMaterial: THREE.MeshStandardMaterial,
+  vertexShader: vertex,
+  fragmentShader: fragment,
+  // mesh standard material
+  metalness: 0.5,
+  roughness: 0.25,
+  envMapIntensity: 0.5,
+  color: "#858080",
+});
+
 // model
 let model: THREE.Group | null = null;
 gltfLoader.load("./gears.glb", (gltf) => {
@@ -59,7 +74,11 @@ gltfLoader.load("./gears.glb", (gltf) => {
 
   model.traverse((child) => {
     if (child instanceof THREE.Mesh) {
-      child.material = material;
+      if (child.name === "outerHull") {
+        child.material = slicedMaterial;
+      } else {
+        child.material = material;
+      }
       child.castShadow = true;
       child.receiveShadow = true;
     }
