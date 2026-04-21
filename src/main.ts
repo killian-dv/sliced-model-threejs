@@ -64,6 +64,13 @@ gui
   .step(0.001)
   .name("Slice Arc");
 
+const patchMap = {
+  csm_Slice: {
+    "#include <colorspace_fragment>":
+      "#include <colorspace_fragment> if (!gl_FrontFacing) { gl_FragColor = vec4(0.75, 0.15, 0.3, 1.0); }",
+  },
+};
+
 // Material
 const material = new THREE.MeshStandardMaterial({
   metalness: 0.5,
@@ -78,11 +85,23 @@ const slicedMaterial = new CustomShaderMaterial({
   vertexShader: vertex,
   fragmentShader: fragment,
   uniforms: uniforms,
+  patchMap: patchMap,
   // mesh standard material
   metalness: 0.5,
   roughness: 0.25,
   envMapIntensity: 0.5,
   color: "#858080",
+  side: THREE.DoubleSide,
+});
+
+const slicedDepthMaterial = new CustomShaderMaterial({
+  // csm
+  baseMaterial: THREE.MeshDepthMaterial,
+  vertexShader: vertex,
+  fragmentShader: fragment,
+  uniforms: uniforms,
+  patchMap: patchMap,
+  depthPacking: THREE.RGBADepthPacking,
 });
 
 // model
@@ -94,6 +113,7 @@ gltfLoader.load("./gears.glb", (gltf) => {
     if (child instanceof THREE.Mesh) {
       if (child.name === "outerHull") {
         child.material = slicedMaterial;
+        child.customDepthMaterial = slicedDepthMaterial;
       } else {
         child.material = material;
       }

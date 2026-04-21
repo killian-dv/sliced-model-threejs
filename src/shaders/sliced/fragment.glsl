@@ -10,4 +10,6 @@ void main() {
   if (angle > 0.0 && angle < uSliceArc) {
     discard;
   }
+
+  float csm_Slice;
 }
