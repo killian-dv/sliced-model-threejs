@@ -1,13 +1,13 @@
 import GUI from "lil-gui";
 import * as THREE from "three";
+import CustomShaderMaterial from "three-custom-shader-material/vanilla";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
-import CustomShaderMaterial from "three-custom-shader-material/vanilla";
-import "./style.css";
-import vertex from "./shaders/sliced/vertex.glsl";
 import fragment from "./shaders/sliced/fragment.glsl";
+import vertex from "./shaders/sliced/vertex.glsl";
+import "./style.css";
 
 /**
  * Base
@@ -46,6 +46,23 @@ rgbeLoader.load("./aerodynamics_workshop.hdr", (environmentMap) => {
 /**
  * Sliced model
  */
+const uniforms = {
+  uSliceStart: new THREE.Uniform(1.75),
+  uSliceArc: new THREE.Uniform(1.25),
+};
+
+gui
+  .add(uniforms.uSliceStart, "value")
+  .min(-Math.PI)
+  .max(Math.PI)
+  .step(0.001)
+  .name("Slice Start");
+gui
+  .add(uniforms.uSliceArc, "value")
+  .min(0)
+  .max(2 * Math.PI)
+  .step(0.001)
+  .name("Slice Arc");
 
 // Material
 const material = new THREE.MeshStandardMaterial({
@@ -60,6 +77,7 @@ const slicedMaterial = new CustomShaderMaterial({
   baseMaterial: THREE.MeshStandardMaterial,
   vertexShader: vertex,
   fragmentShader: fragment,
+  uniforms: uniforms,
   // mesh standard material
   metalness: 0.5,
   roughness: 0.25,
@@ -168,6 +186,7 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1;
+// renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(sizes.pixelRatio);
 
